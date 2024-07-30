@@ -6,7 +6,7 @@
 
 import LocalAuthentication
 
-@objc(BiometricsChange)
+@objc(BiometricChangeDetector)
 class BiometricChangeDetector: CDVPlugin {
     @objc(checkForBiometricChanges:)
     func checkForBiometricChanges(_ command: CDVInvokedUrlCommand) {
