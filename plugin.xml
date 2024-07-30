@@ -2,8 +2,8 @@
 <plugin id="cordova.plugin.biometricschangedetector" version="1.0.0"
     xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <name>BiometricsChangeDetector</name>
-    <js-module name="BiometricsChangeDetector" src="www/biometricschange.js">
+    <name>BiometricChangeDetector</name>
+    <js-module name="BiometricChangeDetector" src="www/biometricschange.js">
         <clobbers target="outsystems.plugin.biometricschangedetector" />
     </js-module>
     <platform name="ios">
@@ -20,7 +20,7 @@
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="BiometricChangeDetector">
-                <param name="android-package" value="outsystems.experts.plugin.biometricschange.BiometricsChangeDetector" />
+                <param name="android-package" value="outsystems.experts.plugin.biometricschange.BiometricChangeDetector" />
             </feature>
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml"></config-file>
