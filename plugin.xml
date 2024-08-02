@@ -24,6 +24,12 @@
             </feature>
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml"></config-file>
-        <source-file src="src/android/BiometricsChange.java" target-dir="src/outsystems/experts/plugin/biometricschange" />
+        <source-file src="src/android/BiometricChangeDetector.java" target-dir="src/outsystems/experts/plugin/biometricschange" />
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+            <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+        </config-file>
+
     </platform>
 </plugin>
