@@ -30,7 +30,7 @@ public class BiometricChangeDetector extends CordovaPlugin {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 checkForBiometricChanges(callbackContext);
             } else {
-                callbackContext.error("Biometric features are not supported on this Android version.");
+                callbackContext.error("BioNotAvailable");
             }
             return true;
         }
@@ -41,29 +41,29 @@ public class BiometricChangeDetector extends CordovaPlugin {
     private void checkForBiometricChanges(CallbackContext callbackContext) {
         try {
             if (!isBiometricHardwareAvailable()) {
-                callbackContext.error("Biometric hardware not available.");
+                callbackContext.error("BioNotAvailable");
                 return;
             }
 
             SecretKey key = getKey();
             if (key == null) {
                 generateKey();
-                callbackContext.success("Key generated, no previous biometric data.");
+                callbackContext.success("FirstBioCheck");
                 return;
             }
 
             try {
                 Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
                 cipher.init(Cipher.ENCRYPT_MODE, key);
-                callbackContext.success("Biometrics unchanged.");
+                callbackContext.success("SameBio");
             } catch (KeyPermanentlyInvalidatedException e) {
                 Log.d(TAG, "---  ✅ --- KeyPermanentlyInvalidatedException: " + e.getMessage());
                 generateKey(); // Generate a new key to reset the state
-                callbackContext.success("Biometrics have changed.");
+                callbackContext.success("BioReset");
             }
         } catch (Exception e) {
             Log.e(TAG, "---  ✅ --- Error checking biometric changes: " + e.getMessage(), e);
-            callbackContext.error("Error checking biometric changes: " + e.getMessage());
+            callbackContext.error("Error: " + e.getMessage());
         }
     }
 
@@ -71,14 +71,21 @@ public class BiometricChangeDetector extends CordovaPlugin {
     private void generateKey() throws Exception {
         Log.d(TAG, "---  ✅ --- Generating new key");
         KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, KEYSTORE_NAME);
-        KeyGenParameterSpec keyGenParameterSpec = new KeyGenParameterSpec.Builder(KEY_NAME,
+        KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(KEY_NAME,
                 KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                 .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
-                .setUserAuthenticationRequired(true)
-                .setInvalidatedByBiometricEnrollment(true)
-                .build();
-        keyGenerator.init(keyGenParameterSpec);
+                .setUserAuthenticationRequired(true);
+        // This is a workaround to avoid crashes on devices whose API level is < 24
+        // because KeyGenParameterSpec.Builder#setInvalidatedByBiometricEnrollment is only
+        // visible on API level +24.
+        // Ideally there should be a compat library for KeyGenParameterSpec.Builder but
+        // which isn't available yet.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            builder.setInvalidatedByBiometricEnrollment(true);
+        }
+
+        keyGenerator.init(builder.build());
         keyGenerator.generateKey();
         Log.d(TAG, "---  ✅ --- New key generated");
     }
